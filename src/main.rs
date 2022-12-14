@@ -55,14 +55,14 @@ struct Health {
 fn main() {
     let mut app = App::new();
     app.insert_resource(ClearColor(CLEAR))
-        .insert_resource(WindowDescriptor {
-            width: HEIGHT * RESOLUTION,
-            height: HEIGHT,
-            title: "Bevy Material Tutorial".to_string(),
-            present_mode: PresentMode::Fifo,
-            resizable: false,
-            ..Default::default()
-        })
+        // .insert_resource(WindowDescriptor {
+        //     width: HEIGHT * RESOLUTION,
+        //     height: HEIGHT,
+        //     title: "Bevy Material Tutorial".to_string(),
+        //     present_mode: PresentMode::Fifo,
+        //     resizable: false,
+        //     ..Default::default()
+        // })
         .add_plugins(DefaultPlugins)
         .add_plugin(Material2dPlugin::<CoolMaterial>::default())
         .add_startup_system(spawn_camera)
@@ -83,7 +83,7 @@ fn setup(
     assets: Res<AssetServer>,
 ) {
     commands
-        .spawn_bundle(MaterialMesh2dBundle {
+        .spawn(MaterialMesh2dBundle {
             mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
             material: my_material_assets.add(CoolMaterial {
                 color: Color::rgb(0.0, 1.0, 0.3),
@@ -95,7 +95,7 @@ fn setup(
         })
         .insert(Health { value: 0.2 });
     commands
-        .spawn_bundle(MaterialMesh2dBundle {
+        .spawn(MaterialMesh2dBundle {
             mesh: mesh_assets.add(Mesh::from(shape::Quad::default())).into(),
             material: my_material_assets.add(CoolMaterial {
                 color: Color::rgb(0.0, 1.0, 0.3),
@@ -108,6 +108,7 @@ fn setup(
         .insert(Health { value: 0.8 });
 }
 
+#[derive(Resource)]
 struct ExtractedTime {
     seconds_since_startup: f32,
 }
@@ -117,7 +118,7 @@ impl ExtractResource for ExtractedTime {
 
     fn extract_resource(time: &Self::Source) -> Self {
         ExtractedTime {
-            seconds_since_startup: time.seconds_since_startup() as f32,
+            seconds_since_startup: time.elapsed_seconds() as f32,
         }
     }
 }
@@ -126,6 +127,7 @@ fn extract_health(
     mut commands: Commands,
     health_query: Extract<Query<(Entity, &Health, &Handle<CoolMaterial>)>>,
 ) {
+    println!("Extracting health");
     for (entity, health, handle) in health_query.iter() {
         commands
             .get_or_spawn(entity)
@@ -168,5 +170,5 @@ fn spawn_camera(mut commands: Commands) {
 
     camera.projection.scaling_mode = ScalingMode::None;
 
-    commands.spawn_bundle(camera);
+    commands.spawn(camera);
 }
